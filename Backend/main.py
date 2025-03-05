@@ -38,13 +38,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load your trained model
 model = NepaliTransformer(vocab_size=30000,d_model=768, num_layers=6, num_heads=8).to(device)
-snapshot = torch.load(r'models\snapshot.pt',map_location=device)
+snapshot = torch.load(r'models/snapshot.pt',map_location=device)
 model.load_state_dict(snapshot['MODEL_STATE'])
 model.eval()
 
 nermodel = NERModel(model, hidden_dim=512, num_classes=7).to(device)
-nermodel.load_state_dict(torch.load(r"models\NER.pt", map_location=device))
-# nermodel = torch.load("models/NER.pt", map_location=torch.device("cpu"))
+nermodel.load_state_dict(torch.load(r"models/NER.pt", map_location=device))
 
 ner_idx2label = {
     0: 'O',
@@ -57,7 +56,7 @@ ner_idx2label = {
 }
 
 posmodel = POSModel(model, hidden_dim=512, num_classes=39).to(device)
-posmodel.load_state_dict(torch.load(r"models\POS.pt", map_location=torch.device("cpu")))
+posmodel.load_state_dict(torch.load(r"models/POS.pt", map_location=torch.device("cpu")))
 
 pos_idx2label = {
     0: 'CD',
@@ -125,6 +124,49 @@ def predict_entities(request: TextRequest):
             token_id = [tokens['input_ids'][i].item()]
             current_text = tokenizer.decode(token_id)
             current_type = ner_idx2label[pred]
+            
+            # Look ahead for ##
+            next_idx = i + 1
+            while (next_idx < len(predictions) and tokenizer.decode([tokens['input_ids'][next_idx].item()]).startswith('##')):
+                # Merge with the current token
+                next_token = tokenizer.decode([tokens['input_ids'][next_idx].item()])
+                current_text += next_token.replace('##', '')
+                i = next_idx
+                next_idx += 1
+            
+            entities.append({
+                "text": current_text,
+                "type": current_type
+            })
+        i += 1
+
+    return entities
+
+
+@app.post("/pos", response_model=List[EntityResponse])
+def predict_entities(request: TextRequest):
+    text = request.text
+    if not text:
+        raise HTTPException(status_code=400, detail="Empty text received")
+
+    # Tokenize the input text using the Nepali tokenizer
+    tokens = tokenizer.encode(text)
+
+
+    with torch.no_grad():
+        outputs = posmodel(tokens['input_ids'].unsqueeze(1).to(device),tokens['attention_mask'].unsqueeze(1).to(device))  # Forward pass through the model
+
+    predictions = torch.argmax(outputs, dim=-1).squeeze().tolist()  # Get the predicted labels
+    predictions = predictions[1:sum(tokens['attention_mask'].tolist())]  # Remove the [CLS] and [SEP] tokens
+
+    entities = []
+    i = 1
+    while i < len(predictions):
+        pred = predictions[i]
+        if pred in pos_idx2label:
+            token_id = [tokens['input_ids'][i].item()]
+            current_text = tokenizer.decode(token_id)
+            current_type = pos_idx2label[pred]
             
             # Look ahead for ##
             next_idx = i + 1
