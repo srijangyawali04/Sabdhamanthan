@@ -22,12 +22,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load your trained model
 model = NepaliTransformer(vocab_size=30000,d_model=768, num_layers=6, num_heads=8).to(device)
-snapshot = torch.load('models/snapshot.pt',map_location=device)
+snapshot = torch.load(r'models\snapshot.pt',map_location=device)
 model.load_state_dict(snapshot['MODEL_STATE'])
 model.eval()
 
-nermodel = NERModel(model, hidden_dim=512, num_classes=7)
-nermodel.load_state_dict(torch.load("models/NER.pt", map_location=device))
+nermodel = NERModel(model, hidden_dim=512, num_classes=7).to(device)
+nermodel.load_state_dict(torch.load(r"models\NER.pt", map_location=device))
 # nermodel = torch.load("models/NER.pt", map_location=torch.device("cpu"))
 
 ner_idx2label = {
@@ -40,8 +40,8 @@ ner_idx2label = {
     6: 'I-PER'
 }
 
-posmodel = POSModel(model, hidden_dim=512, num_classes=39)
-posmodel.load_state_dict(torch.load("models/POS.pt", map_location=torch.device("cpu")))
+posmodel = POSModel(model, hidden_dim=512, num_classes=39).to(device)
+posmodel.load_state_dict(torch.load(r"models\POS.pt", map_location=torch.device("cpu")))
 
 pos_idx2label = {
     0: 'CD',
@@ -85,18 +85,18 @@ pos_idx2label = {
     38: 'ALPH'
 }
 
-@app.post("/predict", response_model=List[EntityResponse])
+@app.post("/ner", response_model=List[EntityResponse])
 def predict_entities(request: TextRequest):
     text = request.text
     if not text:
         raise HTTPException(status_code=400, detail="Empty text received")
 
     # Tokenize the input text using the Nepali tokenizer
-    tokens = tokenizer.encode(text) 
+    tokens = tokenizer.encode(text)
 
 
     with torch.no_grad():
-        outputs = nermodel(tokens['input_ids'].unsqueeze(1),tokens['attention_mask'].unsqueeze(1))  # Forward pass through the model
+        outputs = nermodel(tokens['input_ids'].unsqueeze(1).to(device),tokens['attention_mask'].unsqueeze(1).to(device))  # Forward pass through the model
 
     predictions = torch.argmax(outputs, dim=-1).squeeze().tolist()  # Get the predicted labels
     predictions = predictions[1:sum(tokens['attention_mask'].tolist())]  # Remove the [CLS] and [SEP] tokens
