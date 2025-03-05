@@ -117,28 +117,40 @@ def predict_entities(request: TextRequest):
     predictions = predictions[1:sum(tokens['attention_mask'].tolist())]  # Remove the [CLS] and [SEP] tokens
 
     entities = []
-    i = 1
-    while i < len(predictions):
-        pred = predictions[i]
+    for i, pred in enumerate(predictions):
         if pred in ner_idx2label:
             token_id = [tokens['input_ids'][i].item()]
-            current_text = tokenizer.decode(token_id)
-            current_type = ner_idx2label[pred]
-            
-            # Look ahead for ##
-            next_idx = i + 1
-            while (next_idx < len(predictions) and tokenizer.decode([tokens['input_ids'][next_idx].item()]).startswith('##')):
-                # Merge with the current token
-                next_token = tokenizer.decode([tokens['input_ids'][next_idx].item()])
-                current_text += next_token.replace('##', '')
-                i = next_idx
-                next_idx += 1
+            text = tokenizer.decode(token_id)
+            type = ner_idx2label[pred]
             
             entities.append({
-                "text": current_text,
-                "type": current_type
+                "text": text,
+                "type": type
             })
-        i += 1
+
+    # entities = []
+    # i = 1
+    # while i < len(predictions):
+    #     pred = predictions[i]
+    #     if pred in ner_idx2label:
+    #         token_id = [tokens['input_ids'][i].item()]
+    #         current_text = tokenizer.decode(token_id)
+    #         current_type = ner_idx2label[pred]
+            
+    #         # Look ahead for ##
+    #         next_idx = i + 1
+    #         while (next_idx < len(predictions) and tokenizer.decode([tokens['input_ids'][next_idx].item()]).startswith('##')):
+    #             # Merge with the current token
+    #             next_token = tokenizer.decode([tokens['input_ids'][next_idx].item()])
+    #             current_text += next_token.replace('##', '')
+    #             i = next_idx
+    #             next_idx += 1
+            
+    #         entities.append({
+    #             "text": current_text,
+    #             "type": current_type
+    #         })
+    #     i += 1
 
     return entities
 
@@ -160,27 +172,38 @@ def predict_entities(request: TextRequest):
     predictions = predictions[1:sum(tokens['attention_mask'].tolist())]  # Remove the [CLS] and [SEP] tokens
 
     entities = []
-    i = 1
-    while i < len(predictions):
-        pred = predictions[i]
+    for i, pred in enumerate(predictions):
         if pred in pos_idx2label:
             token_id = [tokens['input_ids'][i].item()]
-            current_text = tokenizer.decode(token_id)
-            current_type = pos_idx2label[pred]
-            
-            # Look ahead for ##
-            next_idx = i + 1
-            while (next_idx < len(predictions) and tokenizer.decode([tokens['input_ids'][next_idx].item()]).startswith('##')):
-                # Merge with the current token
-                next_token = tokenizer.decode([tokens['input_ids'][next_idx].item()])
-                current_text += next_token.replace('##', '')
-                i = next_idx
-                next_idx += 1
+            text = tokenizer.decode(token_id)
+            type = pos_idx2label[pred]
             
             entities.append({
-                "text": current_text,
-                "type": current_type
+                "text": text,
+                "type": type
             })
-        i += 1
+    # entities = []
+    # i = 1
+    # while i < len(predictions):
+    #     pred = predictions[i]
+    #     if pred in pos_idx2label:
+    #         token_id = [tokens['input_ids'][i].item()]
+    #         current_text = tokenizer.decode(token_id)
+    #         current_type = pos_idx2label[pred]
+            
+    #         # Look ahead for ##
+    #         next_idx = i + 1
+    #         while (next_idx < len(predictions) and tokenizer.decode([tokens['input_ids'][next_idx].item()]).startswith('##')):
+    #             # Merge with the current token
+    #             next_token = tokenizer.decode([tokens['input_ids'][next_idx].item()])
+    #             current_text += next_token.replace('##', '')
+    #             i = next_idx
+    #             next_idx += 1
+            
+    #         entities.append({
+    #             "text": current_text,
+    #             "type": current_type
+    #         })
+    #     i += 1
 
     return entities
