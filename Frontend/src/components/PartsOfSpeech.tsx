@@ -7,17 +7,19 @@ type POSTag = {
 };
 
 const posColors: Record<string, string> = {
-  'NN': 'bg-blue-100 text-blue-800 border-blue-200',
-  'NNP': 'bg-blue-100 text-blue-800 border-blue-200',
-  'PRP': 'bg-green-100 text-green-800 border-green-200',
-  'VB': 'bg-purple-100 text-purple-800 border-purple-200',
-  'JJ': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  'RB': 'bg-indigo-100 text-indigo-800 border-indigo-200',
-  'IN': 'bg-pink-100 text-pink-800 border-pink-200',
-  'CC': 'bg-red-100 text-red-800 border-red-200',
-  'DT': 'bg-orange-100 text-orange-800 border-orange-200',
-  'CD': 'bg-teal-100 text-teal-800 border-teal-200',
-  'OTHER': 'bg-gray-100 text-gray-800 border-gray-200'
+  'NN': 'bg-blue-200 text-blue-900 border-blue-300',       // Common Noun
+  'NNP': 'bg-green-200 text-green-900 border-green-300',     // Proper Noun
+  'PRP': 'bg-purple-200 text-purple-900 border-purple-300',   // Pronoun
+  'VB': 'bg-yellow-200 text-yellow-900 border-yellow-300',     // Verb
+  'JJ': 'bg-orange-200 text-orange-900 border-orange-300',   // Adjective
+  'RB': 'bg-red-200 text-red-900 border-red-300',         // Adverb
+  'IN': 'bg-teal-200 text-teal-900 border-teal-300',       // Preposition
+  'CC': 'bg-pink-200 text-pink-900 border-pink-300',         // Conjunction
+  'DT': 'bg-lime-200 text-lime-900 border-lime-300',       // Determiner
+  'CD': 'bg-cyan-200 text-cyan-900 border-cyan-300',         // Cardinal Number
+  'POP': 'bg-amber-200 text-amber-900 border-amber-300',  // Proper noun
+  'RBO': 'bg-fuchsia-200 text-fuchsia-900 border-fuchsia-300', // Adverb
+  'OTHER': 'bg-gray-200 text-gray-900 border-gray-300'      // Other
 };
 
 const posDescriptions: Record<string, string> = {
@@ -31,6 +33,8 @@ const posDescriptions: Record<string, string> = {
   'CC': 'Conjunction',
   'DT': 'Determiner',
   'CD': 'Cardinal Number',
+  'POP': 'Proper Noun', // add for 'POP'
+  'RBO': 'Adverb', // add for 'RBO'
   'OTHER': 'Other'
 };
 
@@ -41,37 +45,61 @@ const PartsOfSpeech: React.FC = () => {
   const [error, setError] = useState('');
   const [processed, setProcessed] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isNepaliText = (inputText: string): boolean => {
+    // This regex checks if the input text contains Devanagari script characters,
+    // which are commonly used in Nepali.
+    const nepaliRegex = /[\u0900-\u097F]/;
+    return nepaliRegex.test(inputText);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!text) {
       setError('Please enter some Nepali text');
       return;
     }
-    
+
+    if (!isNepaliText(text)) {
+      setError('Please enter text in Nepali language.');
+      setIsLoading(false);
+      setProcessed(false);
+      setPosTags([]);
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     setProcessed(false);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Mock response - splitting the text by spaces and assigning random POS tags
-      const words = text.split(/\s+/);
-      const tags = ['NN', 'NNP', 'PRP', 'VB', 'JJ', 'RB', 'IN', 'CC', 'DT', 'CD'];
-      
-      const mockPosTags: POSTag[] = words.map(word => {
-        const randomTag = tags[Math.floor(Math.random() * tags.length)];
-        return {
-          word,
-          tag: randomTag,
-          description: posDescriptions[randomTag] || 'Unknown'
-        };
+
+    try {
+      const response = await fetch('http://localhost:8000/pos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: text }),
       });
-      
-      setPosTags(mockPosTags);
-      setIsLoading(false);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data: { text: string; type: string }[] = await response.json();
+
+      const enrichedData: POSTag[] = data.map(item => ({
+        word: item.text,
+        tag: item.type,
+        description: posDescriptions[item.type] || 'Other'
+      }));
+      setPosTags(enrichedData);
       setProcessed(true);
-    }, 1000);
+    } catch (err: any) {
+      setError(`Error: ${err.message}`);
+      console.error("API request failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -80,7 +108,7 @@ const PartsOfSpeech: React.FC = () => {
       <p className="text-gray-600 mb-6">
         Enter Nepali text and our model will analyze and tag each word with its appropriate part of speech.
       </p>
-      
+
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="mb-4">
           <label htmlFor="pos-text" className="block text-sm font-medium text-gray-700 mb-1">
@@ -96,7 +124,7 @@ const PartsOfSpeech: React.FC = () => {
           />
           {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         </div>
-        
+
         <button
           type="submit"
           className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center"
@@ -115,20 +143,20 @@ const PartsOfSpeech: React.FC = () => {
           )}
         </button>
       </form>
-      
+
       {processed && (
         <div className="space-y-6">
           <div className="bg-gray-50 p-4 rounded-md">
             <h3 className="text-lg font-medium text-gray-800 mb-3">Tagged Words</h3>
             <div className="flex flex-wrap gap-2">
               {posTags.map((item, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className={`${posColors[item.tag] || posColors.OTHER} px-2 py-1 rounded border relative group`}
                 >
                   <span>{item.word}</span>
                   <span className="ml-1 text-xs font-bold opacity-70">{item.tag}</span>
-                  
+
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap">
                     {item.description}
@@ -137,7 +165,7 @@ const PartsOfSpeech: React.FC = () => {
               ))}
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-lg font-medium text-gray-800 mb-3">POS Tag Legend</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
