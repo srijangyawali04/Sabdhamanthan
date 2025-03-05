@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 
 type Entity = {
   text: string;
-  type: 'PERSON' | 'LOCATION' | 'ORGANIZATION' | 'DATE' | 'TIME' | 'MONEY' | 'PERCENT' | 'OTHER';
-  startIndex: number;
-  endIndex: number;
+  type: string; // backend returns type as string
 };
 
-const entityColors = {
-  PERSON: 'bg-blue-100 text-blue-800 border-blue-200',
-  LOCATION: 'bg-green-100 text-green-800 border-green-200',
-  ORGANIZATION: 'bg-purple-100 text-purple-800 border-purple-200',
-  DATE: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  TIME: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-  MONEY: 'bg-pink-100 text-pink-800 border-pink-200',
-  PERCENT: 'bg-red-100 text-red-800 border-red-200',
-  OTHER: 'bg-gray-100 text-gray-800 border-gray-200'
+// type EntityType = 'O' | 'B-LOC' | 'B-PER' | 'B-ORG' | 'I-LOC' | 'I-PER' | 'I-ORG';
+
+const entityColors: { [key: string]: string } = {
+  'O': 'bg-blue-100 text-blue-800 border-blue-200',
+  'B-LOC': 'bg-green-100 text-green-800 border-green-200',
+  'B-PER': 'bg-purple-100 text-purple-800 border-purple-200',
+  'B-ORG': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'I-LOC': 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  'I-PER': 'bg-pink-100 text-pink-800 border-pink-200',
+  'I-ORG': 'bg-red-100 text-red-800 border-red-200',
+  'OTHER': 'bg-gray-100 text-gray-800 border-gray-200' // Add a default color for 'OTHER'
 };
 
 const NamedEntityRecognition: React.FC = () => {
@@ -25,68 +25,77 @@ const NamedEntityRecognition: React.FC = () => {
   const [error, setError] = useState('');
   const [processed, setProcessed] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!text) {
       setError('Please enter some Nepali text');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
     setProcessed(false);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Mock response
-      const mockEntities: Entity[] = [
-        { text: 'रामले', type: 'PERSON', startIndex: 0, endIndex: 5 },
-        { text: 'काठमाडौं', type: 'LOCATION', startIndex: 12, endIndex: 20 },
-        { text: 'त्रिभुवन विश्वविद्यालय', type: 'ORGANIZATION', startIndex: 30, endIndex: 50 },
-        { text: '२०७८ साल', type: 'DATE', startIndex: 60, endIndex: 68 }
-      ];
-      
-      setEntities(mockEntities);
-      setIsLoading(false);
+
+    try {
+      const response = await fetch('http://localhost:8000/ner', { // replace `8000` with your backend port if different
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: text }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data: Entity[] = await response.json();
+      setEntities(data);
       setProcessed(true);
-    }, 1000);
+    } catch (err: any) {
+      setError(`Error: ${err.message}`);
+      console.error("API request failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderProcessedText = () => {
     if (!processed || entities.length === 0) return null;
-    
-    // Sort entities by start index to process them in order
-    const sortedEntities = [...entities].sort((a, b) => a.startIndex - b.startIndex);
-    
+
     let lastIndex = 0;
     const parts = [];
-    
-    sortedEntities.forEach((entity, index) => {
-      // Add text before the entity
-      if (entity.startIndex > lastIndex) {
+
+    entities.forEach((entity, index) => {
+      const entityStart = text.indexOf(entity.text, lastIndex);
+      const entityEnd = entityStart + entity.text.length;
+
+      if (entityStart === -1) {
+        return;
+      }
+
+      if (entityStart > lastIndex) {
         parts.push(
           <span key={`text-${index}`}>
-            {text.substring(lastIndex, entity.startIndex)}
+            {text.substring(lastIndex, entityStart)}
           </span>
         );
       }
-      
-      // Add the entity with highlighting
+
       parts.push(
-        <span 
+        <span
           key={`entity-${index}`}
-          className={`${entityColors[entity.type]} px-1 py-0.5 rounded border`}
+          className={`${entityColors[entity.type] || entityColors.OTHER} px-1 py-0.5 rounded border`}
           title={entity.type}
         >
-          {text.substring(entity.startIndex, entity.endIndex)}
+          {entity.text}
         </span>
       );
-      
-      lastIndex = entity.endIndex;
+
+      lastIndex = entityEnd;
     });
-    
-    // Add any remaining text
+
     if (lastIndex < text.length) {
       parts.push(
         <span key="text-end">
@@ -94,9 +103,14 @@ const NamedEntityRecognition: React.FC = () => {
         </span>
       );
     }
-    
+
     return <div className="text-gray-800 leading-relaxed">{parts}</div>;
   };
+
+  const getAllEntityTypes = () => {
+    const types = new Set<string>(entities.map(entity => entity.type));
+    return Array.from(types);
+  }
 
   return (
     <div>
@@ -104,7 +118,7 @@ const NamedEntityRecognition: React.FC = () => {
       <p className="text-gray-600 mb-6">
         Enter Nepali text and our model will identify and classify named entities such as people, organizations, locations, dates, and more.
       </p>
-      
+
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="mb-4">
           <label htmlFor="text" className="block text-sm font-medium text-gray-700 mb-1">
@@ -120,7 +134,7 @@ const NamedEntityRecognition: React.FC = () => {
           />
           {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         </div>
-        
+
         <button
           type="submit"
           className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center"
@@ -139,20 +153,20 @@ const NamedEntityRecognition: React.FC = () => {
           )}
         </button>
       </form>
-      
+
       {processed && (
         <div className="space-y-6">
           <div className="bg-gray-50 p-4 rounded-md">
             <h3 className="text-lg font-medium text-gray-800 mb-3">Identified Entities</h3>
             {renderProcessedText()}
           </div>
-          
+
           <div>
             <h3 className="text-lg font-medium text-gray-800 mb-3">Entity Legend</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {Object.entries(entityColors).map(([type, colorClass]) => (
+              {getAllEntityTypes().map(type => (
                 <div key={type} className="flex items-center">
-                  <span className={`${colorClass} px-2 py-1 rounded text-xs font-medium border mr-2`}>
+                  <span className={`${entityColors[type] || entityColors.OTHER} px-2 py-1 rounded text-xs font-medium border mr-2`}>
                     {type}
                   </span>
                 </div>

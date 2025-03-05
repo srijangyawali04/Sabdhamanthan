@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 from typing import List
 from pydantic import BaseModel
 import torch
@@ -7,6 +9,20 @@ from nepalitokenizer import NepaliTokenizer
 
 # Initialize the FastAPI app
 app = FastAPI()
+origins = [
+    "http://localhost:5173",  # Or the origin of your React app
+    "http://localhost:8000",  # or whatever port your front-end is using
+    "http://localhost",
+    "*" # only for testing in development
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define the input and output models for FastAPI
 class TextRequest(BaseModel):
