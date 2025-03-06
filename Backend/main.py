@@ -111,7 +111,7 @@ pos_idx2label = {
 }
 
 
-@app.post("/fill-mask", response_model=List[str])
+@app.post("/fill-mask", response_model=List[tuple])
 def predict_masked_tokens(request: MaskRequest):
     devices()
     text = request.text
@@ -136,7 +136,7 @@ def predict_masked_tokens(request: MaskRequest):
             top_k_logits, top_k_indices = torch.topk(mask_logits, 5)  # Get top 5 predictions
             probabilities = torch.nn.functional.softmax(top_k_logits, dim=-1)
             predictions = [
-                f"Token: {tokenizer.decode([int(idx)])} (probability: {prob:.4f})"
+                (tokenizer.decode([int(idx)]), prob)
                 for idx, prob in zip(top_k_indices.tolist(), probabilities.tolist())
             ]
 
