@@ -52,19 +52,19 @@ const FillInTheBlank: React.FC = () => {
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Fill in the Blank</h2>
       <p className="text-gray-600 mb-6">
-        Enter a Nepali sentence with a blank space (represented by "_") and our model will suggest the most appropriate words to fill it.
+        Enter a Nepali sentence with a blank space (represented by "_____") and our model will suggest the most appropriate words to fill it.
       </p>
       
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="mb-4">
           <label htmlFor="sentence" className="block text-sm font-medium text-gray-700 mb-1">
-            Enter a sentence with a blank (use "_" for the blank)
+            Enter a sentence with a blank (use "_____" for the blank)
           </label>
           <textarea
             id="sentence"
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="यो एउटा _ घर हो।"
+            placeholder="हाम्रो _____ वर्षको प्रोजेक्टको नमूना"
             value={sentence}
             onChange={(e) => setSentence(e.target.value)}
           />

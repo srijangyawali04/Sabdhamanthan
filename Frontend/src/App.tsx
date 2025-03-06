@@ -98,9 +98,21 @@ function App() {
               <p className="text-gray-300">
                 Have questions or feedback? Reach out to our team.
               </p>
-              <a href="mailto:info@sabdamanthan.ai" className="mt-2 inline-block text-indigo-400 hover:text-indigo-300">
-                info@sabdamanthan.ai
+
+              <a href="mailto:manishpyakurel67@gmail.com" className="mt-2 block text-indigo-400 hover:text-indigo-300">
+                Manish Pyakurel
               </a>
+              <a href="mailto:neupanerupak7@gmail.com" className="mt-2 block text-indigo-400 hover:text-indigo-300">
+                Rupak Neupane
+              </a>
+              <a href="mailto:sarjyant@gmail.com" className="mt-2 block text-indigo-400 hover:text-indigo-300">
+                Sarjyant Shrestha
+              </a>
+              <a href="mailto:srijangyawali0@gmail.com" className="mt-2 block text-indigo-400 hover:text-indigo-300">
+                Srijan Gyawali
+              </a>
+
+
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
