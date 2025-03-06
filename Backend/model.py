@@ -38,7 +38,7 @@ import torch.nn as nn
 
 
 class NepaliTransformer(nn.Module):
-    def __init__(self, vocab_size=30000, d_model=512, max_len=512, num_layers=6, num_heads=8):
+    def __init__(self, vocab_size=30000, d_model=768, max_len=512, num_layers=6, num_heads=8):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.position = nn.Embedding(max_len, d_model)
@@ -66,8 +66,18 @@ class NepaliTransformer(nn.Module):
         for layer in self.encoder_layers:
             x = layer(x, src_key_padding_mask=pad_mask)
         
-        # Use [CLS] token (first position) for sentence embedding
         return x
+    
+    def lm_token(self, x,attention_mask):
+        positions = torch.arange(x.size(1), device=x.device).expand(x.size(0), -1)
+        x = self.embedding(x) + self.position(positions)
+        
+        pad_mask = (attention_mask == 0)
+        
+        for layer in self.encoder_layers:
+            x = layer(x, src_key_padding_mask=pad_mask)
+        
+        return self.lm_head(x)
     
 class NERModel(nn.Module):
     def __init__(self, embedding_model, hidden_dim, num_classes, dropout_rate=0.3):

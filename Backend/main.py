@@ -53,6 +53,7 @@ model = NepaliTransformer(vocab_size=30000, d_model=768, num_layers=6, num_heads
 snapshot = torch.load(r'models/snapshot.pt', map_location=device)
 model.load_state_dict(snapshot['MODEL_STATE'])
 model.eval()
+
 nermodel = NERModel(model, hidden_dim=512, num_classes=7).to(device)
 nermodel.load_state_dict(torch.load(r"models/NER.pt", map_location=device))
 ner_idx2label = {
@@ -112,6 +113,7 @@ pos_idx2label = {
 
 @app.post("/fill-mask", response_model=List[str])
 def predict_masked_tokens(request: MaskRequest):
+    devices()
     text = request.text
  
     if not text:
@@ -124,13 +126,13 @@ def predict_masked_tokens(request: MaskRequest):
     if not mask_positions:
         raise HTTPException(status_code=400, detail="No mask token found in the input text")
 
-    with torch.no_grad():
-        outputs = model(input_ids.unsqueeze(0).to(device), attention_mask=attention_mask.unsqueeze(0).to(device))
-        logits = outputs
+    with torch.no_grad(): 
+        logits = model.lm_token(input_ids.unsqueeze(0).to(device), attention_mask=attention_mask.unsqueeze(0).to(device))
+        
 
         if len(mask_positions) == 1:
             mask_idx = mask_positions[0]
-            mask_logits = logits[0, mask_idx, :]
+            mask_logits = logits[0, mask_idx, :]    
             top_k_logits, top_k_indices = torch.topk(mask_logits, 5)  # Get top 5 predictions
             probabilities = torch.nn.functional.softmax(top_k_logits, dim=-1)
             predictions = [
@@ -144,14 +146,14 @@ def predict_masked_tokens(request: MaskRequest):
                 mask_logits = logits[0, mask_idx, :]
                 top_idx = torch.argmax(mask_logits).item()
                 predicted_word = tokenizer.decode([top_idx])
-                start_index = modified_text.find(tokenizer.mask_token)
+                start_index = modified_text.find('<mask>')
                 if start_index != -1:
-                    end_index = start_index + len(tokenizer.mask_token)
+                    end_index = start_index + len('<mask>')
                     modified_text = modified_text[:start_index] + predicted_word + modified_text[end_index:]
 
             predictions = [modified_text]
 
-        return predictions
+    return predictions
 
 
 @app.post("/ner", response_model=List[EntityResponse])
@@ -219,3 +221,9 @@ def predict_entities(request: TextRequest):
                 "type": pred
             })
         return entities
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", reload=True)
