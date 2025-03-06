@@ -7,36 +7,89 @@ type POSTag = {
 };
 
 const posColors: Record<string, string> = {
-  'NN': 'bg-blue-200 text-blue-900 border-blue-300',       // Common Noun
-  'NNP': 'bg-green-200 text-green-900 border-green-300',     // Proper Noun
-  'PRP': 'bg-purple-200 text-purple-900 border-purple-300',   // Pronoun
-  'VB': 'bg-yellow-200 text-yellow-900 border-yellow-300',     // Verb
-  'JJ': 'bg-orange-200 text-orange-900 border-orange-300',   // Adjective
-  'RB': 'bg-red-200 text-red-900 border-red-300',         // Adverb
-  'IN': 'bg-teal-200 text-teal-900 border-teal-300',       // Preposition
-  'CC': 'bg-pink-200 text-pink-900 border-pink-300',         // Conjunction
-  'DT': 'bg-lime-200 text-lime-900 border-lime-300',       // Determiner
-  'CD': 'bg-cyan-200 text-cyan-900 border-cyan-300',         // Cardinal Number
-  'POP': 'bg-amber-200 text-amber-900 border-amber-300',  // Proper noun
-  'RBO': 'bg-fuchsia-200 text-fuchsia-900 border-fuchsia-300', // Adverb
-  'OTHER': 'bg-gray-200 text-gray-900 border-gray-300'      // Other
+  'CD': 'bg-cyan-200 text-cyan-900 border-cyan-300',            // Cardinal Number
+  'JJ': 'bg-orange-200 text-orange-900 border-orange-300',       // Adjective
+  'NNP': 'bg-green-200 text-green-900 border-green-300',         // Proper Noun
+  'POP': 'bg-green-200 text-green-900 border-green-300',         // Proper Noun
+  'NN': 'bg-blue-200 text-blue-900 border-blue-300',             // Common Noun
+  'PKO': 'bg-teal-200 text-teal-900 border-teal-300',            // Postposition
+  'VBX': 'bg-yellow-200 text-yellow-900 border-yellow-300',      // Infinitive Verb
+  'YF': 'bg-yellow-200 text-yellow-900 border-yellow-300',       // Sentence-final Punctuation
+  'FB': 'bg-amber-200 text-amber-900 border-amber-300',           // Abbreviation
+  'VBF': 'bg-yellow-200 text-yellow-900 border-yellow-300',      // Finite Verb
+  'PLAI': 'bg-orange-200 text-orange-900 border-orange-300',     // Plural Indefinite Adjective
+  'DUM': 'bg-gray-200 text-gray-900 border-gray-300',            // Dummy
+  'VBKO': 'bg-yellow-200 text-yellow-900 border-yellow-300',     // Aspect Verb
+  'RBO': 'bg-red-200 text-red-900 border-red-300',               // Adverb
+  'VBI': 'bg-yellow-200 text-yellow-900 border-yellow-300',      // Infinitive Verb
+  'VBO': 'bg-yellow-200 text-yellow-900 border-yellow-300',      // Other Verb
+  'HRU': 'bg-blue-200 text-blue-900 border-blue-300',            // Human or Referent
+  'JJD': 'bg-orange-200 text-orange-900 border-orange-300',      // Degree Adjective
+  'YM': 'bg-teal-200 text-teal-900 border-teal-300',             // Sentence-medial Punctuation
+  'PLE': 'bg-lime-200 text-lime-900 border-lime-300',            // Plural/Exclusive
+  'JJM': 'bg-orange-200 text-orange-900 border-orange-300',      // Marked Adjective
+  'RP': 'bg-purple-200 text-purple-900 border-purple-300',        // Relative Pronoun
+  'VBNE': 'bg-yellow-200 text-yellow-900 border-yellow-300',     // Non-finite Verb
+  'CS': 'bg-pink-200 text-pink-900 border-pink-300',             // Subordinating Conjunction
+  'YQ': 'bg-amber-200 text-amber-900 border-amber-300',           // Quotation Marks
+  'CL': 'bg-cyan-200 text-cyan-900 border-cyan-300',             // Classifier
+  'PP': 'bg-purple-200 text-purple-900 border-purple-300',        // Personal Pronoun
+  'PP$': 'bg-purple-200 text-purple-900 border-purple-300',       // Possessive Pronoun
+  'CC': 'bg-pink-200 text-pink-900 border-pink-300',             // Coordinating Conjunction
+  'SYM': 'bg-gray-200 text-gray-900 border-gray-300',            // Symbol
+  'PPR': 'bg-purple-200 text-purple-900 border-purple-300',       // Proper Pronoun
+  'DM': 'bg-teal-200 text-teal-900 border-teal-300',             // Determiner
+  'OD': 'bg-yellow-200 text-yellow-900 border-yellow-300',       // Object
+  'QW': 'bg-red-200 text-red-900 border-red-300',                // Wh-Question Word
+  'UNW': 'bg-gray-200 text-gray-900 border-gray-300',            // Unclassified Word
+  'RBM': 'bg-red-200 text-red-900 border-red-300',               // Modal Adverb
+  'FW': 'bg-blue-200 text-blue-900 border-blue-300',             // Foreign Word
+  'YB': 'bg-amber-200 text-amber-900 border-amber-300',           // Brackets
+  'ALPH': 'bg-cyan-200 text-cyan-900 border-cyan-300'             // Alphabet
 };
 
 const posDescriptions: Record<string, string> = {
-  'NN': 'Common Noun',
-  'NNP': 'Proper Noun',
-  'PRP': 'Pronoun',
-  'VB': 'Verb',
-  'JJ': 'Adjective',
-  'RB': 'Adverb',
-  'IN': 'Preposition',
-  'CC': 'Conjunction',
-  'DT': 'Determiner',
   'CD': 'Cardinal Number',
-  'POP': 'Proper Noun', // add for 'POP'
-  'RBO': 'Adverb', // add for 'RBO'
-  'OTHER': 'Other'
+  'JJ': 'Adjective',
+  'NNP': 'Proper Noun',
+  'POP': 'Proper Noun',
+  'NN': 'Common Noun',
+  'PKO': 'Postposition',
+  'VBX': 'Infinitive Verb',
+  'YF': 'Sentence-final Punctuation',
+  'FB': 'Abbreviation',
+  'VBF': 'Finite Verb',
+  'PLAI': 'Plural Indefinite Adjective',
+  'DUM': 'Dummy',
+  'VBKO': 'Aspect Verb',
+  'RBO': 'Adverb',
+  'VBI': 'Infinitive Verb',
+  'VBO': 'Other Verb',
+  'HRU': 'Human or Referent',
+  'JJD': 'Degree Adjective',
+  'YM': 'Sentence-medial Punctuation',
+  'PLE': 'Plural/Exclusive',
+  'JJM': 'Marked Adjective',
+  'RP': 'Relative Pronoun',
+  'VBNE': 'Non-finite Verb',
+  'CS': 'Subordinating Conjunction',
+  'YQ': 'Quotation Marks',
+  'CL': 'Classifier',
+  'PP': 'Personal Pronoun',
+  'PP$': 'Possessive Pronoun',
+  'CC': 'Coordinating Conjunction',
+  'SYM': 'Symbol',
+  'PPR': 'Proper Pronoun',
+  'DM': 'Determiner',
+  'OD': 'Object',
+  'QW': 'Wh-Question Word',
+  'UNW': 'Unclassified Word',
+  'RBM': 'Modal Adverb',
+  'FW': 'Foreign Word',
+  'YB': 'Brackets',
+  'ALPH': 'Alphabet'
 };
+
 
 const PartsOfSpeech: React.FC = () => {
   const [text, setText] = useState('');
@@ -90,7 +143,7 @@ const PartsOfSpeech: React.FC = () => {
       const enrichedData: POSTag[] = data.map(item => ({
         word: item.text,
         tag: item.type,
-        description: posDescriptions[item.type] || 'Other'
+        description: posDescriptions[item.type] 
       }));
       setPosTags(enrichedData);
       setProcessed(true);
