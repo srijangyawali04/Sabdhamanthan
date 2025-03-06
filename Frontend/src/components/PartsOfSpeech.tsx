@@ -101,6 +101,7 @@ const PartsOfSpeech: React.FC = () => {
       setIsLoading(false);
     }
   };
+  console.log(posTags);
 
   return (
     <div>

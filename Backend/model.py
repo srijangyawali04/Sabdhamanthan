@@ -2,6 +2,41 @@ import torch
 import torch.nn as nn
 
 
+# class NepaliTransformer(nn.Module):
+#     def __init__(self, vocab_size=30000, d_model=512, max_len=512, num_layers=6, num_heads=8):
+#         super().__init__()
+#         self.embedding = nn.Embedding(vocab_size, d_model)
+#         self.position = nn.Embedding(max_len, d_model)
+        
+#         self.encoder_layers = nn.ModuleList([
+#             nn.TransformerEncoderLayer(
+#                 d_model=d_model,
+#                 nhead=num_heads,
+#                 dim_feedforward=d_model*4,
+#                 activation="gelu",
+#                 batch_first=True
+#             ) for _ in range(num_layers)
+#         ])
+        
+#         self.lm_head = nn.Linear(d_model, vocab_size)
+#         self.cls_head = nn.Linear(d_model, d_model)  # Optional projection NSP ko lagi use hudo recha aayela kaam lagena
+
+
+#     def forward(self, x, attention_mask):
+#         # Add [CLS] token position (always position 0)
+#         positions = torch.arange(x.size(1), device=x.device).expand(x.size(0), -1)
+#         x = self.embedding(x) + self.position(positions)
+        
+#         pad_mask = (attention_mask == 0)
+        
+#         for layer in self.encoder_layers:
+#             x = layer(x, src_key_padding_mask=pad_mask)
+        
+#         return x
+#         # return self.lm_head(x),self.cls_head(x)  # return logits for language modeling and classification
+
+
+
 class NepaliTransformer(nn.Module):
     def __init__(self, vocab_size=30000, d_model=512, max_len=512, num_layers=6, num_heads=8):
         super().__init__()
@@ -19,8 +54,7 @@ class NepaliTransformer(nn.Module):
         ])
         
         self.lm_head = nn.Linear(d_model, vocab_size)
-        self.cls_head = nn.Linear(d_model, d_model)  # Optional projection NSP ko lagi use hudo recha aayela kaam lagena
-
+        self.cls_head = nn.Linear(d_model, d_model)  # Optional projection
 
     def forward(self, x, attention_mask):
         # Add [CLS] token position (always position 0)
@@ -32,8 +66,8 @@ class NepaliTransformer(nn.Module):
         for layer in self.encoder_layers:
             x = layer(x, src_key_padding_mask=pad_mask)
         
+        # Use [CLS] token (first position) for sentence embedding
         return x
-        # return self.lm_head(x),self.cls_head(x)  # return logits for language modeling and classification
     
 class NERModel(nn.Module):
     def __init__(self, embedding_model, hidden_dim, num_classes, dropout_rate=0.3):
