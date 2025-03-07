@@ -32,17 +32,17 @@ const FillInTheBlank: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [completeSentence, setCompleteSentence] = useState('');
-  const [isNepaliUI, setIsNepaliUI] = useState(true);
+  const [isNepaliUI, setIsNepaliUI] = useState(false);
 
   // Language text resources
   const languageText: { nepali: LanguageText, english: LanguageText } = {
     nepali: {
       title: 'रिक्त स्थान भर्नुहोस्',
-      description: 'खाली ठाउँ ("_" द्वारा प्रतिनिधित्व) भएको नेपाली वाक्य लेख्नुहोस् र हाम्रो मोडेलले यसलाई भर्न उपयुक्त शब्दहरू सुझाव दिनेछ।',
-      inputLabel: 'खाली ठाउँ सहितको वाक्य लेख्नुहोस् (खाली ठाउँको लागि "_" प्रयोग गर्नुहोस्)',
+      description: 'खाली ठाउँ (" _ " द्वारा प्रतिनिधित्व) भएको नेपाली वाक्य लेख्नुहोस् र हाम्रो मोडेलले यसलाई भर्न उपयुक्त शब्दहरू सुझाव दिनेछ।',
+      inputLabel: 'खाली ठाउँ सहितको वाक्य लेख्नुहोस् (खाली ठाउँको लागि " _ " प्रयोग गर्नुहोस्)',
       placeholder: 'हाम्रो _ वर्षको प्रोजेक्टको नमूना',
       errorEmpty: 'कृपया एउटा वाक्य लेख्नुहोस्',
-      errorNoBlank: 'कृपया वाक्यमा "_" प्रयोग गरेर खाली ठाउँ राख्नुहोस्',
+      errorNoBlank: 'कृपया वाक्यमा " _ " प्रयोग गरेर खाली ठाउँ राख्नुहोस्',
       errorNotNepali: 'कृपया नेपाली भाषामा मात्र लेख्नुहोस्।',
       errorUnexpectedResponse: 'अप्रत्याशित प्रतिक्रिया ढाँचा',
       errorFetchingSuggestions: 'सुझावहरू प्राप्त गर्न त्रुटि भयो',
@@ -56,11 +56,11 @@ const FillInTheBlank: React.FC = () => {
     },
     english: {
       title: 'Fill in the Blank',
-      description: 'Enter a Nepali sentence with a blank space (represented by "_") and our model will suggest the most appropriate words to fill it.',
-      inputLabel: 'Enter a sentence with a blank (use "_" for the blank)',
+      description: 'Enter a Nepali sentence with a blank space (represented by " _ ") and our model will suggest the most appropriate words to fill it.',
+      inputLabel: 'Enter a sentence with a blank (use " _ " for the blank)',
       placeholder: 'हाम्रो _ वर्षको प्रोजेक्टको नमूना',
       errorEmpty: 'Please enter a sentence',
-      errorNoBlank: 'Please include a blank space using "_" in your sentence',
+      errorNoBlank: 'Please include a blank space using " _ " in your sentence',
       errorNotNepali: 'Please enter text in Nepali language.',
       errorUnexpectedResponse: 'Unexpected response format',
       errorFetchingSuggestions: 'Error fetching suggestions',
@@ -117,8 +117,6 @@ const FillInTheBlank: React.FC = () => {
         text: sentence.replace('_', '<mask>'),
       });
   
-      // Debugging: Log the response data to see its structure
-      console.log('Response data:', response.data);
   
       // Check if response.data is an array of arrays with word and probability
       if (Array.isArray(response.data)) {
@@ -130,8 +128,6 @@ const FillInTheBlank: React.FC = () => {
           }))
           .sort((a, b) => b.probability - a.probability); // Sort by highest probability
   
-        // Log the sorted suggestions for debugging
-        console.log('Sorted suggestions:', sortedSuggestions);
   
         setSuggestions(sortedSuggestions);
         setIsLoading(false);

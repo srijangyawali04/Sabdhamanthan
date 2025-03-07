@@ -155,7 +155,7 @@ const PartsOfSpeech: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [processed, setProcessed] = useState(false);
-  const [isNepaliUI, setIsNepaliUI] = useState(true);
+  const [isNepaliUI, setIsNepaliUI] = useState(false);
 
   // Language text resources
   const languageText: { nepali: LanguageText, english: LanguageText } = {
