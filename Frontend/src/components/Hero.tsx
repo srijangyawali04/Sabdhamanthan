@@ -1,6 +1,10 @@
 import React from 'react';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  isNepaliUI: boolean;
+}
+
+const Hero: React.FC<HeroProps> = ({ isNepaliUI }) => {
   return (
     <div className="relative bg-indigo-800 overflow-hidden">
       <div className="max-w-7xl mx-auto">
@@ -11,7 +15,7 @@ const Hero: React.FC = () => {
                 <div className="sm:text-center lg:text-left">
                   <h1>
                     <span className="block text-sm font-semibold uppercase tracking-wide text-gray-300 sm:text-base lg:text-sm xl:text-base">
-                      Introducing
+                      {isNepaliUI ? 'परिचय' : 'Introducing'}
                     </span>
                     <span className="mt-1 block text-4xl tracking-tight font-extrabold text-white sm:text-5xl xl:text-6xl">
                       <span className="block"> शब्दमन्थन</span>
@@ -19,14 +23,16 @@ const Hero: React.FC = () => {
                     </span>
                   </h1>
                   <p className="mt-3 text-base text-gray-300 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl text-left">
-                    A powerful Nepali language embedding model designed to revolutionize natural language processing for Nepali text. Experience state-of-the-art performance in various NLP tasks.
+                    {isNepaliUI 
+                      ? 'नेपाली पाठको प्राकृतिक भाषा प्रशोधनलाई क्रान्तिकारी बनाउन डिजाइन गरिएको शक्तिशाली नेपाली भाषा एम्बेडिङ मोडेल। विभिन्न एनएलपी कार्यहरूमा अत्याधुनिक प्रदर्शन अनुभव गर्नुहोस्।'
+                      : 'A powerful Nepali language embedding model designed to revolutionize natural language processing for Nepali text. Experience state-of-the-art performance in various NLP tasks.'}
                   </p>
                   <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
                     <a
                       href="#"
                       className="ml-4 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                      Learn More
+                      {isNepaliUI ? 'थप जानकारी' : 'Learn More'}
                     </a>
                   </div>
                 </div>

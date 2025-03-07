@@ -20,19 +20,19 @@ interface LanguageText {
   buttonGetSuggestions: string;
   suggestedWords: string;
   completedSentence: string;
-  languageToggle: string;
-  englishLabel: string;
-  nepaliLabel: string;
 }
 
-const FillInTheBlank: React.FC = () => {
+interface FillInTheBlankProps {
+  isNepaliUI: boolean;
+}
+
+const FillInTheBlank: React.FC<FillInTheBlankProps> = ({ isNepaliUI }) => {
   const [sentence, setSentence] = useState('');
   const [blankWord, setBlankWord] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [completeSentence, setCompleteSentence] = useState('');
-  const [isNepaliUI, setIsNepaliUI] = useState(false);
 
   // Language text resources
   const languageText: { nepali: LanguageText, english: LanguageText } = {
@@ -50,9 +50,6 @@ const FillInTheBlank: React.FC = () => {
       buttonGetSuggestions: 'सुझावहरू प्राप्त गर्नुहोस्',
       suggestedWords: 'सुझाव गरिएका शब्दहरू',
       completedSentence: 'पूरा वाक्य',
-      languageToggle: 'English UI',
-      englishLabel: 'English',
-      nepaliLabel: 'नेपाली'
     },
     english: {
       title: 'Fill in the Blank',
@@ -68,9 +65,6 @@ const FillInTheBlank: React.FC = () => {
       buttonGetSuggestions: 'Get Suggestions',
       suggestedWords: 'Suggested Words',
       completedSentence: 'Completed Sentence',
-      languageToggle: 'नेपाली UI',
-      englishLabel: 'English',
-      nepaliLabel: 'नेपाली'
     }
   };
 
@@ -117,6 +111,8 @@ const FillInTheBlank: React.FC = () => {
         text: sentence.replace('_', '<mask>'),
       });
   
+      // Debugging: Log the response data to see its structure
+      console.log('Response data:', response.data);
   
       // Check if response.data is an array of arrays with word and probability
       if (Array.isArray(response.data)) {
@@ -128,6 +124,8 @@ const FillInTheBlank: React.FC = () => {
           }))
           .sort((a, b) => b.probability - a.probability); // Sort by highest probability
   
+        // Log the sorted suggestions for debugging
+        console.log('Sorted suggestions:', sortedSuggestions);
   
         setSuggestions(sortedSuggestions);
         setIsLoading(false);
@@ -152,35 +150,9 @@ const FillInTheBlank: React.FC = () => {
     setBlankWord(word);
     setCompleteSentence(sentence.replace('_', word));
   };
-
-  const toggleLanguage = () => {
-    setIsNepaliUI(!isNepaliUI);
-  };
   
   return (
-    <div className="relative">
-      {/* Language toggle button */}
-      <div className="absolute top-0 right-0 flex items-center">
-        <span className={`mr-2 text-sm ${!isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
-          {languageText.english.englishLabel}
-        </span>
-        <div 
-          onClick={toggleLanguage}
-          className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          style={{ backgroundColor: isNepaliUI ? '#4F46E5' : '#D1D5DB' }}
-        >
-          <span className="sr-only">{text.languageToggle}</span>
-          <span 
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              isNepaliUI ? 'translate-x-5' : 'translate-x-0'
-            }`}
-          />
-        </div>
-        <span className={`ml-2 text-sm ${isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
-          {languageText.nepali.nepaliLabel}
-        </span>
-      </div>
-
+    <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-4">{text.title}</h2>
       <p className="text-gray-600 mb-6">
         {text.description}

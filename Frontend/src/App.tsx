@@ -6,23 +6,93 @@ import FillInTheBlank from './components/FillInTheBlank';
 import NamedEntityRecognition from './components/NamedEntityRecognition';
 import PartsOfSpeech from './components/PartsOfSpeech';
 
+// Create a language text interface for all app-wide text content
+interface AppLanguageText {
+  fillBlankTab: string;
+  fillBlankTabMobile: string;
+  nerTab: string;
+  nerTabMobile: string;
+  posTab: string;
+  posTabMobile: string;
+  footerTitle: string;
+  footerDescription: string;
+  resourcesTitle: string;
+  documentation: string;
+  apiReference: string;
+  githubRepo: string;
+  contactTitle: string;
+  contactDescription: string;
+  allRightsReserved: string;
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<'fill-blank' | 'ner' | 'pos'>('fill-blank');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isNepaliUI, setIsNepaliUI] = useState(false); // Default to English UI
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const toggleLanguage = () => {
+    setIsNepaliUI(!isNepaliUI);
+  };
+
+  // Language text for app-wide content
+  const languageText: { nepali: AppLanguageText, english: AppLanguageText } = {
+    nepali: {
+      fillBlankTab: 'रिक्त स्थान भर्नुहोस्',
+      fillBlankTabMobile: 'रिक्त',
+      nerTab: 'नामित इकाई पहिचान',
+      nerTabMobile: 'NER',
+      posTab: 'भाषाको भागहरू',
+      posTabMobile: 'POS',
+      footerTitle: 'शब्दमन्थन',
+      footerDescription: 'प्राकृतिक भाषा प्रशोधन कार्यहरू बढाउन डिजाइन गरिएको अत्याधुनिक नेपाली भाषा एम्बेडिङ मोडेल।',
+      resourcesTitle: 'स्रोतहरू',
+      documentation: 'प्रलेखन',
+      apiReference: 'API सन्दर्भ',
+      githubRepo: 'GitHub रिपोजिटरी',
+      contactTitle: 'सम्पर्क',
+      contactDescription: 'प्रश्न वा प्रतिक्रिया छ? हाम्रो टोलीलाई सम्पर्क गर्नुहोस्।',
+      allRightsReserved: 'सर्वाधिकार सुरक्षित।'
+    },
+    english: {
+      fillBlankTab: 'Fill in the Blank',
+      fillBlankTabMobile: 'Fill Blank',
+      nerTab: 'Named Entity Recognition',
+      nerTabMobile: 'NER',
+      posTab: 'Parts of Speech',
+      posTabMobile: 'POS',
+      footerTitle: 'Sabdamanthan',
+      footerDescription: 'A state-of-the-art Nepali language embedding model designed to enhance natural language processing tasks.',
+      resourcesTitle: 'Resources',
+      documentation: 'Documentation',
+      apiReference: 'API Reference',
+      githubRepo: 'GitHub Repository',
+      contactTitle: 'Contact',
+      contactDescription: 'Have questions or feedback? Reach out to our team.',
+      allRightsReserved: 'All rights reserved.'
+    }
+  };
+
+  // Get current language text
+  const text = isNepaliUI ? languageText.nepali : languageText.english;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Fixed header with z-index */}
       <div className="sticky top-0 z-50 bg-white shadow-md">
-        <Header toggleMobileMenu={toggleMobileMenu} mobileMenuOpen={mobileMenuOpen} />
+        <Header 
+          toggleMobileMenu={toggleMobileMenu} 
+          mobileMenuOpen={mobileMenuOpen} 
+          isNepaliUI={isNepaliUI}
+          toggleLanguage={toggleLanguage}
+        />
       </div>
       
-      <main className="pt-0"> {/* You may need to adjust this padding based on your header height */}
-        <Hero />
+      <main className="pt-0">
+        <Hero isNepaliUI={isNepaliUI} />
         
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -37,8 +107,8 @@ function App() {
                   }`}
                 >
                   {/* <MessageSquare className="w-5 h-5 mr-2" /> */}
-                  <span className="hidden sm:inline">Fill in the Blank</span>
-                  <span className="sm:hidden">Fill Blank</span>
+                  <span className="hidden sm:inline">{text.fillBlankTab}</span>
+                  <span className="sm:hidden">{text.fillBlankTabMobile}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('ner')}
@@ -49,8 +119,8 @@ function App() {
                   }`}
                 >
                   {/* <FileText className="w-5 h-5 mr-2" /> */}
-                  <span className="hidden sm:inline">Named Entity Recognition</span>
-                  <span className="sm:hidden">NER</span>
+                  <span className="hidden sm:inline">{text.nerTab}</span>
+                  <span className="sm:hidden">{text.nerTabMobile}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('pos')}
@@ -61,16 +131,16 @@ function App() {
                   }`}
                 >
                   {/* <Braces className="w-5 h-5 mr-2" /> */}
-                  <span className="hidden sm:inline">Parts of Speech</span>
-                  <span className="sm:hidden">POS</span>
+                  <span className="hidden sm:inline">{text.posTab}</span>
+                  <span className="sm:hidden">{text.posTabMobile}</span>
                 </button>
               </nav>
             </div>
             
             <div className="p-6">
-              {activeTab === 'fill-blank' && <FillInTheBlank />}
-              {activeTab === 'ner' && <NamedEntityRecognition />}
-              {activeTab === 'pos' && <PartsOfSpeech />}
+              {activeTab === 'fill-blank' && <FillInTheBlank isNepaliUI={isNepaliUI} />}
+              {activeTab === 'ner' && <NamedEntityRecognition isNepaliUI={isNepaliUI} />}
+              {activeTab === 'pos' && <PartsOfSpeech isNepaliUI={isNepaliUI} />}
             </div>
           </div>  
         </section>
@@ -80,23 +150,23 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Sabdamanthan</h3>
+              <h3 className="text-lg font-semibold mb-4">{text.footerTitle}</h3>
               <p className="text-gray-300">
-                A state-of-the-art Nepali language embedding model designed to enhance natural language processing tasks.
+                {text.footerDescription}
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Resources</h3>
+              <h3 className="text-lg font-semibold mb-4">{text.resourcesTitle}</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-300 hover:text-white">Documentation</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">API Reference</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">GitHub Repository</a></li>
+                <li><a href="#" className="text-gray-300 hover:text-white">{text.documentation}</a></li>
+                <li><a href="#" className="text-gray-300 hover:text-white">{text.apiReference}</a></li>
+                <li><a href="#" className="text-gray-300 hover:text-white">{text.githubRepo}</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Contact</h3>
+              <h3 className="text-lg font-semibold mb-4">{text.contactTitle}</h3>
               <p className="text-gray-300">
-                Have questions or feedback? Reach out to our team.
+                {text.contactDescription}
               </p>
 
               <a href="mailto:manishpyakurel67@gmail.com" className="mt-2 block text-indigo-400 hover:text-indigo-300">
@@ -111,12 +181,10 @@ function App() {
               <a href="mailto:srijangyawali0@gmail.com" className="mt-2 block text-indigo-400 hover:text-indigo-300">
                 Srijan Gyawali
               </a>
-
-
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-            <p>© {new Date().getFullYear()} Sabdamanthan. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Sabdamanthan. {text.allRightsReserved}</p>
           </div>
         </div>
       </footer>

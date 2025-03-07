@@ -17,9 +17,11 @@ interface LanguageText {
   buttonAnalyze: string;
   taggedWords: string;
   posTagLegend: string;
-  languageToggle: string;
-  englishLabel: string;
-  nepaliLabel: string;
+}
+
+// Define props interface to receive isNepaliUI state from parent component
+interface PartsOfSpeechProps {
+  isNepaliUI: boolean;
 }
 
 const posColors: Record<string, string> = {
@@ -149,13 +151,12 @@ const posDescriptionsNepali: Record<string, string> = {
   'ALPH': 'वर्णमाला'
 };
 
-const PartsOfSpeech: React.FC = () => {
+const PartsOfSpeech: React.FC<PartsOfSpeechProps> = ({ isNepaliUI }) => {
   const [text, setText] = useState('');
   const [posTags, setPosTags] = useState<POSTag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [processed, setProcessed] = useState(false);
-  const [isNepaliUI, setIsNepaliUI] = useState(false);
 
   // Language text resources
   const languageText: { nepali: LanguageText, english: LanguageText } = {
@@ -170,9 +171,6 @@ const PartsOfSpeech: React.FC = () => {
       buttonAnalyze: 'पाठ विश्लेषण गर्नुहोस्',
       taggedWords: 'टैग गरिएका शब्दहरू',
       posTagLegend: 'शब्दको प्रकार टैग प्रतीक',
-      languageToggle: 'भाषा परिवर्तन',
-      englishLabel: 'English',
-      nepaliLabel: 'नेपाली'
     },
     english: {
       title: 'Parts of Speech Tagging',
@@ -185,9 +183,6 @@ const PartsOfSpeech: React.FC = () => {
       buttonAnalyze: 'Analyze Text',
       taggedWords: 'Tagged Words',
       posTagLegend: 'POS Tag Legend',
-      languageToggle: 'Language Toggle',
-      englishLabel: 'English',
-      nepaliLabel: 'नेपाली'
     }
   };
 
@@ -254,34 +249,8 @@ const PartsOfSpeech: React.FC = () => {
     }
   };
 
-  const toggleLanguage = () => {
-    setIsNepaliUI(!isNepaliUI);
-  };
-
   return (
-    <div className="relative">
-      {/* Language toggle switch */}
-      <div className="absolute top-0 right-0 flex items-center">
-        <span className={`mr-2 text-sm ${!isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
-          {languageText.english.englishLabel}
-        </span>
-        <div 
-          onClick={toggleLanguage}
-          className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          style={{ backgroundColor: isNepaliUI ? '#4F46E5' : '#D1D5DB' }}
-        >
-          <span className="sr-only">{text_labels.languageToggle}</span>
-          <span 
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              isNepaliUI ? 'translate-x-5' : 'translate-x-0'
-            }`}
-          />
-        </div>
-        <span className={`ml-2 text-sm ${isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
-          {languageText.nepali.nepaliLabel}
-        </span>
-      </div>
-
+    <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-4">{text_labels.title}</h2>
       <p className="text-gray-600 mb-6">
         {text_labels.description}

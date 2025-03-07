@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 type Entity = {
     text: string;
-    type: string; // backend returns type as string
+    type: string;
 };
+
+interface LanguageText {
+    title: string;
+    description: string;
+    inputLabel: string;
+    placeholder: string;
+    errorEmpty: string;
+    errorNotNepali: string;
+    errorFetchingEntities: string;
+    buttonProcessing: string;
+    buttonIdentifyEntities: string;
+    identifiedEntities: string;
+    entityLegend: string;
+}
 
 const entityColors: { [key: string]: string } = {
     'O': 'bg-blue-200 text-blue-900 border-blue-300',          // Other
@@ -13,36 +28,6 @@ const entityColors: { [key: string]: string } = {
     'I-LOC': 'bg-lime-200 text-lime-900 border-lime-300',      // Inside Location
     'I-PER': 'bg-pink-200 text-pink-900 border-pink-300',        // Inside Person
     'I-ORG': 'bg-teal-200 text-teal-900 border-teal-300',      // Inside Organization
-};
-
-// Content in both languages
-const languageText = {
-    english: {
-        title: "Named Entity Recognition",
-        description: "Enter Nepali text and our model will identify and classify named entities such as people, organizations, locations, dates, and more.",
-        inputLabel: "Enter Nepali text",
-        buttonText: "Identify Entities",
-        processingText: "Processing...",
-        errorTextRequired: "Please enter some Nepali text.",
-        errorTextLanguage: "Please enter text in Nepali language.",
-        identifiedEntities: "Identified Entities",
-        entityLegend: "Entity Legend",
-        englishLabel: "English",
-        nepaliLabel: "नेपाली"
-    },
-    nepali: {
-        title: "नामित इकाई पहिचान",
-        description: "नेपाली पाठ प्रविष्ट गर्नुहोस् र हाम्रो मोडेलले व्यक्ति, संस्था, स्थान, मिति र अन्य जस्ता नामित इकाईहरू पहिचान र वर्गीकरण गर्नेछ।",
-        inputLabel: "नेपाली पाठ प्रविष्ट गर्नुहोस्",
-        buttonText: "इकाईहरू पहिचान गर्नुहोस्",
-        processingText: "प्रशोधन गर्दै...",
-        errorTextRequired: "कृपया केही नेपाली पाठ प्रविष्ट गर्नुहोस्।",
-        errorTextLanguage: "कृपया नेपाली भाषामा मात्र लेख्नुहोस्।",
-        identifiedEntities: "पहिचान गरिएका इकाईहरू",
-        entityLegend: "इकाई सूची",
-        englishLabel: "English",
-        nepaliLabel: "नेपाली"
-    }
 };
 
 const entityDescriptions: Record<string, { en: string, ne: string }> = {
@@ -55,38 +40,72 @@ const entityDescriptions: Record<string, { en: string, ne: string }> = {
     'I-ORG': { en: 'Inside Organization', ne: 'संस्थाको अन्तर्गत' },
 };
 
-const NamedEntityRecognition: React.FC = () => {
+interface NamedEntityRecognitionProps {
+    isNepaliUI: boolean;
+}
+
+const NamedEntityRecognition: React.FC<NamedEntityRecognitionProps> = ({ isNepaliUI }) => {
     const [text, setText] = useState('');
     const [entities, setEntities] = useState<Entity[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [processed, setProcessed] = useState(false);
-    const [isNepaliUI, setIsNepaliUI] = useState(false);
 
-    // Get current language text based on UI setting
-    const text_labels = isNepaliUI ? languageText.nepali : languageText.english;
-
-    const toggleLanguage = () => {
-        setIsNepaliUI(!isNepaliUI);
+    // Language text resources
+    const languageText: { nepali: LanguageText, english: LanguageText } = {
+        nepali: {
+            title: "नामित इकाई पहिचान",
+            description: "नेपाली पाठ प्रविष्ट गर्नुहोस् र हाम्रो मोडेलले व्यक्ति, संस्था, स्थान, मिति र अन्य जस्ता नामित इकाईहरू पहिचान र वर्गीकरण गर्नेछ।",
+            inputLabel: "नेपाली पाठ प्रविष्ट गर्नुहोस्",
+            placeholder: "रामले गएको हप्ता काठमाडौंमा भएको त्रिभुवन विश्वविद्यालयको कार्यक्रममा भाग लिए। यो कार्यक्रम २०७८ साल असार महिनामा आयोजना गरिएको थियो।",
+            errorEmpty: "कृपया केही नेपाली पाठ प्रविष्ट गर्नुहोस्।",
+            errorNotNepali: "कृपया नेपाली भाषामा मात्र लेख्नुहोस्।",
+            errorFetchingEntities: "इकाईहरू प्राप्त गर्न त्रुटि भयो",
+            buttonProcessing: "प्रशोधन गर्दै...",
+            buttonIdentifyEntities: "इकाईहरू पहिचान गर्नुहोस्",
+            identifiedEntities: "पहिचान गरिएका इकाईहरू",
+            entityLegend: "इकाई सूची",
+        },
+        english: {
+            title: "Named Entity Recognition",
+            description: "Enter Nepali text and our model will identify and classify named entities such as people, organizations, locations, dates, and more.",
+            inputLabel: "Enter Nepali text",
+            placeholder: "रामले गएको हप्ता काठमाडौंमा भएको त्रिभुवन विश्वविद्यालयको कार्यक्रममा भाग लिए। यो कार्यक्रम २०७८ साल असार महिनामा आयोजना गरिएको थियो।",
+            errorEmpty: "Please enter some Nepali text.",
+            errorNotNepali: "Please enter text in Nepali language.",
+            errorFetchingEntities: "Error fetching entities",
+            buttonProcessing: "Processing...",
+            buttonIdentifyEntities: "Identify Entities",
+            identifiedEntities: "Identified Entities",
+            entityLegend: "Entity Legend",
+        }
     };
 
+    // Get current language text
+    const text_labels = isNepaliUI ? languageText.nepali : languageText.english;
+
+    // Function to check if text is in Nepali
     const isNepaliText = (inputText: string): boolean => {
-        // This regex checks if the input text contains Devanagari script characters,
-        // which are commonly used in Nepali.
-        const nepaliRegex = /[\u0900-\u097F]/;
-        return nepaliRegex.test(inputText);
+        // Check for Nepali Unicode range (0900-097F for Devanagari)
+        const nepaliPattern = /^[\u0900-\u097F\s.,!?।-]+$/;
+        
+        // Remove spaces and common punctuation for the check
+        const textToCheck = inputText.replace(/[\s.,!?।-]/g, '');
+        
+        // Text must contain at least one Nepali character
+        return nepaliPattern.test(inputText) && textToCheck.length > 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!text) {
-            setError(text_labels.errorTextRequired);
+            setError(text_labels.errorEmpty);
             return;
         }
 
         if (!isNepaliText(text)) {
-            setError(text_labels.errorTextLanguage);
+            setError(text_labels.errorNotNepali);
             setIsLoading(false);
             setProcessed(false);
             setEntities([]);
@@ -98,23 +117,20 @@ const NamedEntityRecognition: React.FC = () => {
         setProcessed(false);
 
         try {
-            const response = await fetch('http://34.198.228.140:8000/ner', { // replace `8000` with your backend port if different
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: text }),
+            const response = await axios.post('http://34.198.228.140:8000/ner', {
+                text: text
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
 
-            const data: Entity[] = await response.json();
-            setEntities(data);
-            setProcessed(true);
+            if (Array.isArray(response.data)) {
+                setEntities(response.data);
+                setProcessed(true);
+            } else {
+                console.error('Response data is not in the expected format:', response.data);
+                setError('Unexpected response format');
+            }
         } catch (err: any) {
-            setError(`Error: ${err.message}`);
+            setError(`${text_labels.errorFetchingEntities}: ${err.message}`);
             console.error("API request failed:", err);
         } finally {
             setIsLoading(false);
@@ -150,7 +166,7 @@ const NamedEntityRecognition: React.FC = () => {
             parts.push(
                 <span
                     key={`entity-${index}`}
-                    className={`${entityColors[entity.type] || entityColors.OTHER} px-1 py-0.5 rounded border relative group`}
+                    className={`${entityColors[entity.type] || entityColors.O} px-1 py-0.5 rounded border relative group`}
                     title={description || 'Unknown Entity'} // Show description on hover
                 >
                     {entity.text}
@@ -172,29 +188,7 @@ const NamedEntityRecognition: React.FC = () => {
     };
 
     return (
-        <div className="relative">
-            {/* Language Toggle */}
-            <div className="absolute top-0 right-0 flex items-center">
-                <span className={`mr-2 text-sm ${!isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
-                    {languageText.english.englishLabel}
-                </span>
-                <div 
-                    onClick={toggleLanguage}
-                    className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    style={{ backgroundColor: isNepaliUI ? '#4F46E5' : '#D1D5DB' }}
-                >
-                    <span className="sr-only">{text_labels.englishLabel}</span>
-                    <span 
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                            isNepaliUI ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                    />
-                </div>
-                <span className={`ml-2 text-sm ${isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
-                    {languageText.nepali.nepaliLabel}
-                </span>
-            </div>
-
+        <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-4">{text_labels.title}</h2>
             <p className="text-gray-600 mb-6">
                 {text_labels.description}
@@ -209,9 +203,10 @@ const NamedEntityRecognition: React.FC = () => {
                         id="text"
                         rows={5}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="रामले गएको हप्ता काठमाडौंमा भएको त्रिभुवन विश्वविद्यालयको कार्यक्रममा भाग लिए। यो कार्यक्रम २०७८ साल असार महिनामा आयोजना गरिएको थियो।"
+                        placeholder={text_labels.placeholder}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
+                        dir="auto"
                     />
                     {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
                 </div>
@@ -227,10 +222,10 @@ const NamedEntityRecognition: React.FC = () => {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            {text_labels.processingText}
+                            {text_labels.buttonProcessing}
                         </>
                     ) : (
-                        text_labels.buttonText
+                        text_labels.buttonIdentifyEntities
                     )}
                 </button>
             </form>
@@ -247,7 +242,7 @@ const NamedEntityRecognition: React.FC = () => {
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {Object.entries(entityDescriptions).map(([type, labels]) => (
                                 <div key={type} className="flex items-center">
-                                    <span className={`${entityColors[type] || entityColors.OTHER} px-2 py-1 rounded text-xs font-medium border mr-2`}>
+                                    <span className={`${entityColors[type] || entityColors.O} px-2 py-1 rounded text-xs font-medium border mr-2`}>
                                         {type}
                                     </span>
                                     <span className="text-sm text-gray-700">{isNepaliUI ? labels.ne : labels.en}</span>
