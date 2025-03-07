@@ -15,15 +15,44 @@ const entityColors: { [key: string]: string } = {
     'I-ORG': 'bg-teal-200 text-teal-900 border-teal-300',      // Inside Organization
 };
 
+// Content in both languages
+const languageText = {
+    english: {
+        title: "Named Entity Recognition",
+        description: "Enter Nepali text and our model will identify and classify named entities such as people, organizations, locations, dates, and more.",
+        inputLabel: "Enter Nepali text",
+        buttonText: "Identify Entities",
+        processingText: "Processing...",
+        errorTextRequired: "Please enter some Nepali text.",
+        errorTextLanguage: "Please enter text in Nepali language.",
+        identifiedEntities: "Identified Entities",
+        entityLegend: "Entity Legend",
+        englishLabel: "English",
+        nepaliLabel: "नेपाली"
+    },
+    nepali: {
+        title: "नामित इकाई पहिचान",
+        description: "नेपाली पाठ प्रविष्ट गर्नुहोस् र हाम्रो मोडेलले व्यक्ति, संस्था, स्थान, मिति र अन्य जस्ता नामित इकाईहरू पहिचान र वर्गीकरण गर्नेछ।",
+        inputLabel: "नेपाली पाठ प्रविष्ट गर्नुहोस्",
+        buttonText: "इकाईहरू पहिचान गर्नुहोस्",
+        processingText: "प्रशोधन गर्दै...",
+        errorTextRequired: "कृपया केही नेपाली पाठ प्रविष्ट गर्नुहोस्।",
+        errorTextLanguage: "कृपया नेपाली भाषामा मात्र लेख्नुहोस्।",
+        identifiedEntities: "पहिचान गरिएका इकाईहरू",
+        entityLegend: "इकाई सूची",
+        englishLabel: "English",
+        nepaliLabel: "नेपाली"
+    }
+};
 
-const entityDescriptions: Record<string, string> = {
-    'O': 'Other',
-    'B-LOC': 'Beginning of Location',
-    'B-PER': 'Beginning of Person',
-    'B-ORG': 'Beginning of Organization',
-    'I-LOC': 'Inside Location',
-    'I-PER': 'Inside Person',
-    'I-ORG': 'Inside Organization',
+const entityDescriptions: Record<string, { en: string, ne: string }> = {
+    'O': { en: 'Other', ne: 'अन्य' },
+    'B-LOC': { en: 'Beginning of Location', ne: 'स्थानको सुरुवात' },
+    'B-PER': { en: 'Beginning of Person', ne: 'व्यक्तिको सुरुवात' },
+    'B-ORG': { en: 'Beginning of Organization', ne: 'संस्थाको सुरुवात' },
+    'I-LOC': { en: 'Inside Location', ne: 'स्थानको अन्तर्गत' },
+    'I-PER': { en: 'Inside Person', ne: 'व्यक्तिको अन्तर्गत' },
+    'I-ORG': { en: 'Inside Organization', ne: 'संस्थाको अन्तर्गत' },
 };
 
 const NamedEntityRecognition: React.FC = () => {
@@ -32,6 +61,14 @@ const NamedEntityRecognition: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [processed, setProcessed] = useState(false);
+    const [isNepaliUI, setIsNepaliUI] = useState(false);
+
+    // Get current language text based on UI setting
+    const text_labels = isNepaliUI ? languageText.nepali : languageText.english;
+
+    const toggleLanguage = () => {
+        setIsNepaliUI(!isNepaliUI);
+    };
 
     const isNepaliText = (inputText: string): boolean => {
         // This regex checks if the input text contains Devanagari script characters,
@@ -44,12 +81,12 @@ const NamedEntityRecognition: React.FC = () => {
         e.preventDefault();
 
         if (!text) {
-            setError('Please enter some Nepali text.');
+            setError(text_labels.errorTextRequired);
             return;
         }
 
         if (!isNepaliText(text)) {
-            setError('Please enter text in Nepali language.');
+            setError(text_labels.errorTextLanguage);
             setIsLoading(false);
             setProcessed(false);
             setEntities([]);
@@ -61,7 +98,7 @@ const NamedEntityRecognition: React.FC = () => {
         setProcessed(false);
 
         try {
-            const response = await fetch('http://localhost:8000/ner', { // replace `8000` with your backend port if different
+            const response = await fetch('http://34.198.228.140:8000/ner', { // replace `8000` with your backend port if different
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,11 +143,15 @@ const NamedEntityRecognition: React.FC = () => {
                 );
             }
 
+            const description = isNepaliUI 
+                ? entityDescriptions[entity.type]?.ne || entity.type 
+                : entityDescriptions[entity.type]?.en || entity.type;
+
             parts.push(
                 <span
                     key={`entity-${index}`}
                     className={`${entityColors[entity.type] || entityColors.OTHER} px-1 py-0.5 rounded border relative group`}
-                    title={entityDescriptions[entity.type] || entity.type || 'Unknown Entity'} // Show description on hover
+                    title={description || 'Unknown Entity'} // Show description on hover
                 >
                     {entity.text}
                 </span>
@@ -131,16 +172,38 @@ const NamedEntityRecognition: React.FC = () => {
     };
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Named Entity Recognition</h2>
+        <div className="relative">
+            {/* Language Toggle */}
+            <div className="absolute top-0 right-0 flex items-center">
+                <span className={`mr-2 text-sm ${!isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
+                    {languageText.english.englishLabel}
+                </span>
+                <div 
+                    onClick={toggleLanguage}
+                    className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    style={{ backgroundColor: isNepaliUI ? '#4F46E5' : '#D1D5DB' }}
+                >
+                    <span className="sr-only">{text_labels.englishLabel}</span>
+                    <span 
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            isNepaliUI ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                    />
+                </div>
+                <span className={`ml-2 text-sm ${isNepaliUI ? 'font-medium' : 'text-gray-500'}`}>
+                    {languageText.nepali.nepaliLabel}
+                </span>
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{text_labels.title}</h2>
             <p className="text-gray-600 mb-6">
-                Enter Nepali text and our model will identify and classify named entities such as people, organizations, locations, dates, and more.
+                {text_labels.description}
             </p>
 
             <form onSubmit={handleSubmit} className="mb-6">
                 <div className="mb-4">
                     <label htmlFor="text" className="block text-sm font-medium text-gray-700 mb-1">
-                        Enter Nepali text
+                        {text_labels.inputLabel}
                     </label>
                     <textarea
                         id="text"
@@ -164,10 +227,10 @@ const NamedEntityRecognition: React.FC = () => {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Processing...
+                            {text_labels.processingText}
                         </>
                     ) : (
-                        'Identify Entities'
+                        text_labels.buttonText
                     )}
                 </button>
             </form>
@@ -175,19 +238,19 @@ const NamedEntityRecognition: React.FC = () => {
             {processed && (
                 <div className="space-y-6">
                     <div className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="text-lg font-medium text-gray-800 mb-3">Identified Entities</h3>
+                        <h3 className="text-lg font-medium text-gray-800 mb-3">{text_labels.identifiedEntities}</h3>
                         {renderProcessedText()}
                     </div>
 
                     <div>
-                        <h3 className="text-lg font-medium text-gray-800 mb-3">Entity Legend</h3>
+                        <h3 className="text-lg font-medium text-gray-800 mb-3">{text_labels.entityLegend}</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {Object.entries(entityDescriptions).map(([type, description]) => (
+                            {Object.entries(entityDescriptions).map(([type, labels]) => (
                                 <div key={type} className="flex items-center">
                                     <span className={`${entityColors[type] || entityColors.OTHER} px-2 py-1 rounded text-xs font-medium border mr-2`}>
                                         {type}
                                     </span>
-                                    <span className="text-sm text-gray-700">{description}</span>
+                                    <span className="text-sm text-gray-700">{isNepaliUI ? labels.ne : labels.en}</span>
                                 </div>
                             ))}
                         </div>

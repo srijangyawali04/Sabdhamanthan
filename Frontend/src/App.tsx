@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Braces, FileText, MessageSquare, Menu, X } from 'lucide-react';
+// import { Braces, FileText, MessageSquare } from 'lucide-react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import FillInTheBlank from './components/FillInTheBlank';
@@ -36,7 +36,7 @@ function App() {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <MessageSquare className="w-5 h-5 mr-2" />
+                  {/* <MessageSquare className="w-5 h-5 mr-2" /> */}
                   <span className="hidden sm:inline">Fill in the Blank</span>
                   <span className="sm:hidden">Fill Blank</span>
                 </button>
@@ -48,7 +48,7 @@ function App() {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <FileText className="w-5 h-5 mr-2" />
+                  {/* <FileText className="w-5 h-5 mr-2" /> */}
                   <span className="hidden sm:inline">Named Entity Recognition</span>
                   <span className="sm:hidden">NER</span>
                 </button>
@@ -60,7 +60,7 @@ function App() {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Braces className="w-5 h-5 mr-2" />
+                  {/* <Braces className="w-5 h-5 mr-2" /> */}
                   <span className="hidden sm:inline">Parts of Speech</span>
                   <span className="sm:hidden">POS</span>
                 </button>
