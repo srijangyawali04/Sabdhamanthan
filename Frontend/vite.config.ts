@@ -10,6 +10,6 @@ export default defineConfig({
     port: 80, // Run on port 80
     host: true, // Allows access from network
     strictPort: true, // Ensures Vite fails if port 80 is unavailable
-    allowedHosts: ['sabdhamanthan.srijangyawali.com'], 
+    allowedHosts: ['sabdamanthan.srijangyawali.com'], 
   },
 });

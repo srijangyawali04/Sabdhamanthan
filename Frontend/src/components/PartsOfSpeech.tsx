@@ -69,7 +69,7 @@ const posColors: Record<string, string> = {
 const posDescriptions: Record<string, string> = {
   'CD': 'Cardinal Number',
   'JJ': 'Adjective',
-  'NNP': 'Proper Noun',
+  'NNP': 'Singular Proper Noun',
   'POP': 'Proper Noun',
   'NN': 'Common Noun',
   'PKO': 'Postposition',
@@ -112,7 +112,7 @@ const posDescriptions: Record<string, string> = {
 const posDescriptionsNepali: Record<string, string> = {
   'CD': 'संख्यावाचक संख्या',
   'JJ': 'विशेषण',
-  'NNP': 'व्यक्तिवाचक संज्ञा',
+  'NNP': 'एकवचन उचित संज्ञा',
   'POP': 'व्यक्तिवाचक संज्ञा',
   'NN': 'सामान्य संज्ञा',
   'PKO': 'परसर्ग',
